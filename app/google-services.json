@@ -1,0 +1,35 @@
+{
+  "project_info": {
+    "project_number": "845947285905",
+    "project_id": "arcane-mission-119721"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:845947285905:android:80a244c014cbe40b",
+        "android_client_info": {
+          "package_name": "io.github.umbraproject.umbra"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2PFRkGtJAlhAD2RpD1EPF3mu_dFam44g"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
