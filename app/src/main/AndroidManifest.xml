@@ -2,7 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.github.umbraproject.umbra" >
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <permission android:name="io.github.umbraproject.umbra.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
     <uses-permission android:name="io.github.umbraproject.umbra.permission.C2D_MESSAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
 
     <application
@@ -20,6 +26,7 @@
             </intent-filter>
         </activity>
 
+        <!-- Handles Messages from Server to Client -->
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"
             android:exported="true"
@@ -29,6 +36,8 @@
                 <category android:name="io.github.umbraproject.umbra" />
             </intent-filter>
         </receiver>
+
+        <!-- Enables various aspects of recieving messages -->
         <service
             android:name="util.gcm.MyGcmListenerService"
             android:exported="false" >
@@ -36,6 +45,8 @@
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
         </service>
+
+        <!-- Handle the creation, rotation and updating of registration tokens -->
         <service
             android:name="util.gcm.MyInstanceIDListenerService"
             android:exported="false">
@@ -43,6 +54,9 @@
                 <action android:name="com.google.android.gms.iid.InstanceID" />
             </intent-filter>
         </service>
+
+        <service android:name=".util.gcm.RegistrationIntentService"
+            android:exported="false" />
 
     </application>
 

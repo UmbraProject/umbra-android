@@ -1,9 +1,8 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion "23.0.3"
 
     defaultConfig {
         applicationId "io.github.umbraproject.umbra"
@@ -23,6 +22,10 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.1'
-    compile "com.google.android.gms:play-services-gcm:8.3.0"
+    compile 'com.android.support:appcompat-v7:23.3.0'
+    compile "com.google.android.gms:play-services-gcm:8.4.0"
+
+//    compile 'com.jakewharton.timber:timber:4.1.2'
 }
+
+apply plugin: 'com.google.gms.google-services'
