@@ -9,7 +9,13 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -18,8 +24,11 @@ import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.github.umbraproject.umbra.R;
+import io.github.umbraproject.umbra.main.model.Message;
 import io.github.umbraproject.umbra.util.constants.GcmConstants;
 import io.github.umbraproject.umbra.util.gcm.GcmUtil;
 import io.github.umbraproject.umbra.util.gcm.RegistrationIntentService;
@@ -36,6 +45,24 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver mRegistrationBroadcastReceiver;
     private BroadcastReceiver mDownstreamBroadcastReceiver;
     private String token;
+
+    private RecyclerView messageRecyclerView;
+    private List<Message> messageList = new ArrayList<>();
+    private MessageAdapter messageAdapter;
+
+    private EditText messageEditText;
+    private Button sendButton;
+
+    private int messageId = 0;
+
+    // 5X ID
+    private String recipient = "c9W7lVoiYTw:APA91bEml1MbMvRPYX5HsydYeKXHXkzFS4rVDSJWHHztFPt1dJNXbfE5ZtkwgVaDZVxLhwf8hnTeYXhJcK40MyyoTD11QdRBJ2P3cWlYZaOcpocyyghTHjuVD50hZJbz9WEZUpp6QHWq";
+
+    // AVD 5
+//    private String recipient = "dSxsYIi8Rfw:APA91bFAnRfmhP5G9y1ij2EtgmVzG_W6q61fBtnfBUfCWgi-DFsyYyRRVCF7w7XWvJaM9o4wEuU4lbHjhxpA0TqgOmojX2asJckSIqtD3HZ5vJ-TMRmRH3Z2azKNHPX0Yc7EfV1AfiUB";
+
+    // My Nexus 5
+//    private String recipient = "dSxsYIi8Rfw:APA91bFAnRfmhP5G9y1ij2EtgmVzG_W6q61fBtnfBUfCWgi-DFsyYyRRVCF7w7XWvJaM9o4wEuU4lbHjhxpA0TqgOmojX2asJckSIqtD3HZ5vJ-TMRmRH3Z2azKNHPX0Yc7EfV1AfiUB";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,10 +103,14 @@ public class MainActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 String from = intent.getStringExtra(GcmConstants.SENDER_ID);
                 Bundle data = intent.getBundleExtra(GcmConstants.EXTRA_KEY_BUNDLE);
-                String message = data.getString(GcmConstants.EXTRA_KEY_MESSAGE);
+                String messageString = data.getString(GcmConstants.EXTRA_KEY_MESSAGE);
 
                 Log.d(TAG, "Received from >" + from + "< with >" + data.toString() + "<");
-                Log.d(TAG, "Message: " + message);
+                Log.d(TAG, "Message: " + messageString);
+
+                Message message = new Message(from, messageString);
+                messageList.add(message);
+                messageAdapter.notifyDataSetChanged();
 
                 String action = data.getString(GcmConstants.ACTION);
                 String status = data.getString(GcmConstants.STATUS);
@@ -102,6 +133,63 @@ public class MainActivity extends AppCompatActivity {
                 new IntentFilter(GcmConstants.REGISTRATION_COMPLETE));
         LocalBroadcastManager.getInstance(this).registerReceiver(mDownstreamBroadcastReceiver,
                 new IntentFilter(GcmConstants.NEW_DOWNSTREAM_MESSAGE));
+
+
+
+        messageRecyclerView = (RecyclerView) this.findViewById(R.id.messagesRecyclerView);
+
+        messageAdapter = new MessageAdapter(messageList);
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager.setStackFromEnd(true); // Useful for chat interface items are added to the bottom
+        messageRecyclerView.setLayoutManager(layoutManager);
+        messageRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        messageRecyclerView.setAdapter(messageAdapter);
+
+//        makeFakeData();
+
+        messageEditText = (EditText) this.findViewById(R.id.message_editText);
+        sendButton = (Button) this.findViewById(R.id.send_button);
+
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bundle data = new Bundle();
+
+                data.putString("message_to", recipient);
+                data.putString("message_text", messageEditText.getText().toString());
+
+                try {
+                    String senderId = GcmUtil.getServerUrl(getString(R.string.gcm_defaultSenderId));
+                    Log.d(TAG, "Sending to senderID: " + senderId);
+
+                    gcm.send(senderId, Integer.toString(++messageId), data);
+
+                    Toast.makeText(getApplicationContext(), "Sent Message", Toast.LENGTH_LONG).show();
+
+                    messageList.add(new Message("Me", messageEditText.getText().toString()));
+
+                    // Clear the edit text
+                    messageEditText.setText("");
+
+                    // Notify view needs to be updated
+                    messageAdapter.notifyDataSetChanged();
+
+                } catch (IOException e) {
+                    Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+
+    public void makeFakeData(){
+
+
+        for(int i = 50; i >= 0; i--) {
+            messageList.add(new Message("Kristy", "Hello! " + i));
+        }
+
+        messageAdapter.notifyDataSetChanged();
 
     }
 

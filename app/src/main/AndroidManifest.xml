@@ -39,7 +39,7 @@
 
         <!-- Enables various aspects of recieving messages -->
         <service
-            android:name="util.gcm.MyGcmListenerService"
+            android:name=".util.gcm.MyGcmListenerService"
             android:exported="false" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
@@ -48,7 +48,7 @@
 
         <!-- Handle the creation, rotation and updating of registration tokens -->
         <service
-            android:name="util.gcm.MyInstanceIDListenerService"
+            android:name=".util.gcm.MyInstanceIDListenerService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.gms.iid.InstanceID" />

@@ -10,7 +10,7 @@ public class GcmConstants {
     public static final String SENDER_ID = "senderId";
     public static final String STRING_IDENTIFIER = "stringIdentifier";
     public static final String NEW_DOWNSTREAM_MESSAGE = "newDownstreamMessage";
-    public static final String EXTRA_KEY_MESSAGE = "message";
+    public static final String EXTRA_KEY_MESSAGE = "message_text";
 
     public static final String EXTRA_KEY_TOKEN = "TOKEN";
     public static final String EXTRA_KEY_BUNDLE = "BUNDLE";

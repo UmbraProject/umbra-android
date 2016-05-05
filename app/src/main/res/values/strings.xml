@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Umbra</string>
+    <string name="message_edit_text_hint">Message</string>
+    <string name="send_button_text">Send</string>
 
 
 </resources>
