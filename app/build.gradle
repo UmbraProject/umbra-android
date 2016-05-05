@@ -29,6 +29,8 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:23.3.0'
     compile 'com.android.support:cardview-v7:23.3.0'
 
+    compile 'com.scottyab:aescrypt:0.0.1'
+
 }
 
 apply plugin: 'com.google.gms.google-services'

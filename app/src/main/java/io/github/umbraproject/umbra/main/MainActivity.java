@@ -22,8 +22,10 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.scottyab.aescrypt.AESCrypt;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private Button sendButton;
 
     private int messageId = 0;
+    String password = "test_password";
 
     // 5X ID
     private String recipient = "c9W7lVoiYTw:APA91bEml1MbMvRPYX5HsydYeKXHXkzFS4rVDSJWHHztFPt1dJNXbfE5ZtkwgVaDZVxLhwf8hnTeYXhJcK40MyyoTD11QdRBJ2P3cWlYZaOcpocyyghTHjuVD50hZJbz9WEZUpp6QHWq";
@@ -108,9 +111,19 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Received from >" + from + "< with >" + data.toString() + "<");
                 Log.d(TAG, "Message: " + messageString);
 
-                Message message = new Message(from, messageString);
+                String decryptedMessageString = null;
+                try {
+                    decryptedMessageString = AESCrypt.decrypt(password, messageString);
+                    Log.d(TAG, "Decrypted Message: " + decryptedMessageString);
+                } catch (GeneralSecurityException e) {
+                    Toast.makeText(getApplicationContext(), "Encryption Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+
+                Message message = new Message(from, decryptedMessageString);
                 messageList.add(message);
                 messageAdapter.notifyDataSetChanged();
+
+                messageRecyclerView.scrollToPosition(messageList.size() - 1);
 
                 String action = data.getString(GcmConstants.ACTION);
                 String status = data.getString(GcmConstants.STATUS);
@@ -135,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
                 new IntentFilter(GcmConstants.NEW_DOWNSTREAM_MESSAGE));
 
 
-
         messageRecyclerView = (RecyclerView) this.findViewById(R.id.messagesRecyclerView);
 
         messageAdapter = new MessageAdapter(messageList);
@@ -146,8 +158,6 @@ public class MainActivity extends AppCompatActivity {
         messageRecyclerView.setItemAnimator(new DefaultItemAnimator());
         messageRecyclerView.setAdapter(messageAdapter);
 
-//        makeFakeData();
-
         messageEditText = (EditText) this.findViewById(R.id.message_editText);
         sendButton = (Button) this.findViewById(R.id.send_button);
 
@@ -156,10 +166,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Bundle data = new Bundle();
 
-                data.putString("message_to", recipient);
-                data.putString("message_text", messageEditText.getText().toString());
-
                 try {
+                    // Encrypt the message
+                    String encryptedMessage = AESCrypt.encrypt(password, messageEditText.getText().toString());
+
+                    data.putString("message_to", recipient);
+                    data.putString("message_text", encryptedMessage);
+
                     String senderId = GcmUtil.getServerUrl(getString(R.string.gcm_defaultSenderId));
                     Log.d(TAG, "Sending to senderID: " + senderId);
 
@@ -175,6 +188,9 @@ public class MainActivity extends AppCompatActivity {
                     // Notify view needs to be updated
                     messageAdapter.notifyDataSetChanged();
 
+                    messageRecyclerView.scrollToPosition(messageList.size() - 1);
+                } catch (GeneralSecurityException e) {
+                    Toast.makeText(getApplicationContext(), "Encryption Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
                     Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
@@ -182,64 +198,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void makeFakeData(){
-
-
-        for(int i = 50; i >= 0; i--) {
-            messageList.add(new Message("Kristy", "Hello! " + i));
-        }
-
-        messageAdapter.notifyDataSetChanged();
-
-    }
-
-    /*
-     * Attach click listeners to buttons.
-     *
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.register_button:
-                registerClient();
-                break;
-            case R.id.unregister_button:
-                unregisterClient();
-                break;
-            case R.id.button_send:
-                sendMessage();
-                break;
-            case R.id.topic_subscribe:
-                subscribeToTopic();
-                break;
-            default:
-                Log.e(TAG, "WAT. How did you click that?");
-        }
-    } */
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(GcmConstants.EXTRA_KEY_TOKEN, token);
     }
-
-    /*
-    private void updateUI(String status, boolean registered) {
-        // Set status and token text
-        statusView.setText(status);
-        registrationTokenFieldView.setText(token);
-
-        // Button enabling
-        registerButton.setEnabled(!registered);
-        unregisterButton.setEnabled(registered);
-
-        // Upstream message enabling
-        upstreamMessageField.setEnabled(registered);
-        sendButton.setEnabled(registered);
-
-        // Topic subscription enabled
-        topicField.setEnabled(registered);
-        subscribeTopicButton.setEnabled(registered);
-    } */
 
     @Override
     protected void onResume() {
@@ -262,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Calls the GCM API to register this client if not already registered.
+     *
      * @throws IOException
      */
     public void registerClient() {
@@ -378,6 +342,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Show a toast with passed text
+     *
      * @param text to be used as toast message
      */
     private void showToast(CharSequence text) {
